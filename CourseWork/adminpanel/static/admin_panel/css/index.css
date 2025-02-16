@@ -1,0 +1,114 @@
+body {
+    background-color: #e9ecef;
+}
+
+.header {
+    background-color: #495057;
+    color: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+
+.btn-logout {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    transform: scale(1.1);
+}
+
+a {
+    outline: none;
+    box-shadow: none;
+}
+
+.no-outline {
+    outline: none;
+    box-shadow: none;
+}
+
+.list-group-item {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff; /* Белый фон для контраста */
+    border: 1px solid #dee2e6; /* Чёткая граница */
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.list-group-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #495057;
+    color: white;
+}
+
+a.text-decoration-none {
+    color: #212529; /* Чёрный текст */
+    display: block; /* Делает ссылку блоком на всю ширину */
+    width: 100%;
+}
+
+a:hover {
+    color: white;
+}
+
+a {
+    color: black;
+}
+
+.bgg:hover
+{
+    background-color: #343a40;
+}
+
+.bttn{
+    margin: 5px;
+}
+
+.table {
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    border-radius: 5px;
+}
+
+.form-select, .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.form-label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.card {
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}

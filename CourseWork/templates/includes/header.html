@@ -1,0 +1,44 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <!-- Логотип -->
+        <a class="navbar-brand" href="{% url 'home' %}">🍕 Еда на Дом</a>
+
+        <!-- Кнопка для мобильного меню -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Меню -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/orders/' %}active{% endif %}" href="{% url 'orders' %}">Мои заказы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/cart/' %}active{% endif %}" href="{% url 'cart' %}">
+                        🛒 Корзина 
+                        <span class="badge bg-warning text-dark">{{ cart_items_count }}</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Авторизация -->
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link">👤 {{ user.username }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Выйти</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-success btn-sm" href="{% url 'login' %}">Войти</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

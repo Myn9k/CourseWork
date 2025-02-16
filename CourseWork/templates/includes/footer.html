@@ -1,0 +1,39 @@
+<footer class="footer mt-auto py-4 bg-dark text-light">
+    <div class="container">
+        <div class="row">
+            <!-- Логотип и краткая информация -->
+            <div class="col-md-4">
+                <h5>🍕 Еда на Дом</h5>
+            </div>
+
+            <!-- Меню футера -->
+            <div class="col-md-4">
+                <h5>Меню</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'home' %}" class="text-light text-decoration-none">Главная</a></li>
+                    <li><a href="{% url 'orders' %}" class="text-light text-decoration-none">Мои заказы</a></li>
+                    <li><a href="{% url 'cart' %}" class="text-light text-decoration-none">Корзина</a></li>
+                    <li><a href="{% url 'checkout' %}" class="text-light text-decoration-none">Оформление заказа</a></li>
+                </ul>
+            </div>
+
+            <!-- Контакты и соцсети -->
+            <div class="col-md-4">
+                <h5>Контакты</h5>
+                <p>📍 Чита, ул. Выдуманная, 228</p>
+                <p>📞 +7 (900) 123-45-67</p>
+                <p>✉ support@eda.ru</p>
+                
+                <h5>Мы в соцсетях</h5>
+                <a href="#" class="text-light me-2"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-light me-2"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-light"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+
+        <!-- Нижняя строка -->
+        <div class="text-center mt-3">
+            <p class="mb-0">&copy; 2024 Еда на Дом. Все права схаваны.</p>
+        </div>
+    </div>
+</footer>

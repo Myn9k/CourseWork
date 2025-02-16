@@ -1,0 +1,114 @@
+/* Основные цвета */
+:root {
+    --primary-color: #7B1FA2; /* Фиолетовый */
+    --dark-primary: #4A148C;  /* Темно-фиолетовый */
+    --accent-color: #FFC107;  /* Желтый */
+    --light-gray: #F5F5F5;    /* Светло-серый */
+    --text-color: #FFFFFF;    /* Белый */
+}
+
+/* Общие стили */
+body {
+    background-color: var(--light-gray);
+    font-family: 'Arial', sans-serif;
+}
+
+/* Навигация */
+.navbar {
+    background-color: var(--dark-primary);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    color: var(--accent-color) !important;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-color) !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+/* Кнопки */
+.btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-primary);
+}
+
+/* Карточки */
+.card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-top {
+    height: 200px;
+}
+
+.card .btn {
+    width: 100%;
+}
+
+.card-title {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.card-text {
+    color: #333;
+}
+
+/* Фильтр кнопок */
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover, .btn-outline-primary.active {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+/* Футер */
+footer {
+    background-color: var(--dark-primary);
+    color: var(--text-color);
+    text-align: center;
+    padding: 15px;
+    margin-top: auto;
+}
+
+.footer h5 {
+    font-weight: bold;
+}
+
+.footer a {
+    color: white;
+    transition: 0.3s;
+}
+
+.footer a:hover {
+    color: var(--accent-color) !important;
+}
+
+.footer p {
+    margin: 0;
+}

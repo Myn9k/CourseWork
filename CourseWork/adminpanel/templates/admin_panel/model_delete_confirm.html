@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Удаление {{ model_name }}</title>
+</head>
+<body>
+    <a href="{% url 'logout' %}" class="btn btn-secondary">Выйти</a>
+    <div class="container">
+        <h1>Удалить "{{ object }}"?</h1>
+        <p>Вы уверены, что хотите удалить этот объект? Это действие нельзя отменить.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+            <a href="{% url 'model_list_view' model_name=model_name %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</body>
+</html>

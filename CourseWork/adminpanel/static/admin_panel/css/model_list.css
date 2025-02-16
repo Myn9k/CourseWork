@@ -1,0 +1,32 @@
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Уменьшаем отступы между фильтрами */
+    justify-content: flex-start;
+}
+
+.filter-container .form-group {
+    flex: 1 1 20%; /* Уменьшаем ширину фильтров до 20% */
+    min-width: 180px; /* Ограничиваем минимальную ширину */
+}
+
+.filter-container button {
+    margin-top: 10px;
+}
+
+.buttons-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.buttons-container .btn {
+    flex: 1;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.buttons-container .btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}

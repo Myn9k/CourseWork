@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Меню{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">Наше меню</h2>
+
+    <!-- Фильтр по категориям -->
+    <div class="mb-3 text-center">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary {% if not selected_category %}active{% endif %}">
+            Все категории
+        </a>
+        {% for category in categories %}
+        <a href="{% url 'home' %}?category={{ category.slug }}" class="btn btn-outline-primary {% if selected_category == category.slug %}active{% endif %}">
+            {{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Отображение только выбранной категории -->
+    {% if selected_category %}
+        {% for category in categories %}
+            {% if category.slug == selected_category %}
+                <h3 class="mt-4"><center>{{ category.name }}</center></h3>
+                <div class="row">
+                    {% for product in products %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <p class="card-text"><strong style="color: var(--primary-color);">{{ product.price }} руб.</strong></p>
+                                <!-- Кнопки -->
+                                <div class="mt-auto">
+                                    <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary w-100 mb-2">Подробнее</a>
+                                    <form method="POST" action="{% url 'cart_add' product.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary w-100">Добавить в корзину</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <!-- Отображение всех категорий -->
+        {% for category in categories %}
+            <h3 class="mt-4"><center>{{ category.name }}</center></h3>
+            <div class="row">
+                {% for product in products %}
+                    {% if product.category == category %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <p class="card-text"><strong style="color: var(--primary-color);">{{ product.price }} руб.</strong></p>
+                                <!-- Кнопки -->
+                                <div class="mt-auto">
+                                    <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary w-100 mb-2">Подробнее</a>
+                                    <form method="POST" action="{% url 'cart_add' product.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary w-100">Добавить в корзину</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}
