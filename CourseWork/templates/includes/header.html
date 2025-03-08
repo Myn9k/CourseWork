@@ -18,7 +18,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/cart/' %}active{% endif %}" href="{% url 'cart' %}">
-                        🛒 Корзина 
+                        🛒 Корзина
                         <span class="badge bg-warning text-dark">{{ cart_items_count }}</span>
                     </a>
                 </li>
@@ -28,7 +28,7 @@
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link">👤 {{ user.username }}</a>
+                        <a class="nav-link" href="{% url 'profile' %}">👤 {{ user.username }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Выйти</a>

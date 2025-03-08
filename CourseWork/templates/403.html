@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Доступ запрещён{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <h2 class="my-4 text-danger">Ошибка 403: Доступ запрещён</h2>
+    <p>Вы пытаетесь получить доступ к чему-то.</p>
+    <a href="{% url 'orders' %}" class="btn btn-primary">Вернуться к заказам</a>
+</div>
+{% endblock %}

@@ -23,11 +23,13 @@ from .views import *
 urlpatterns = [
     path('', home, name='home'),
     path('product/<int:product_id>/', product_detail, name='product_detail'),
+    path("profile/", profile_view, name="profile"),
     path('cart/', cart, name='cart'),  # Страница корзины
     path('cart/add/<int:product_id>/', cart_add, name='cart_add'),  # Добавить в корзину
     path('cart/remove/<int:product_id>/', cart_remove, name='cart_remove'),
     path('checkout/', checkout, name='checkout'),
-    path('orders/', orders, name='orders'),
+    path("orders/", orders_list, name="orders"),
+    path("orders/<int:order_id>/", order_detail, name="order_detail"),
 ]
 
 if settings.DEBUG:

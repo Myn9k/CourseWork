@@ -11,10 +11,11 @@
             <h2>{{ product.name }}</h2>
             <p>{{ product.description }}</p>
             <p><strong>Цена: {{ product.price }} руб.</strong></p>
+            
             <form method="POST" action="{% url 'cart_add' product.id %}">
                 {% csrf_token %}
                 <label>Количество:</label>
-                <input type="number" name="quantity" value="1" min="1" class="form-control w-25">
+                <input type="number" name="quantity" id="quantity" value="1" min="1" class="form-control w-25">
                 <button type="submit" class="btn btn-warning mt-3">Добавить в корзину</button>
             </form>
         </div>

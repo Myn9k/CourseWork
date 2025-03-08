@@ -26,7 +26,9 @@
     
         <div class="mb-3">
             <label>Адрес доставки:</label>
-            <input type="text" name="address" required class="form-control">
+            <input type="text" name="address"
+                   value="{% if user.is_authenticated and user.addresses.all %}{{ user.addresses.first.address }}{% endif %}"
+                   required class="form-control">
         </div>
 
         <h3>Ваш заказ</h3>
@@ -45,7 +47,9 @@
                         <input type="checkbox" class="form-check-input ingredient-checkbox"
                                data-product-id="{{ item.product.id }}" 
                                data-price="{{ product_ingredient.ingredient.base_price }}" 
-                               data-action="add">
+                               data-action="add"
+                               name="customization_{{ item.product.id }}_{{ product_ingredient.ingredient.id }}"
+                               value="add">
                         <label class="form-check-label">Добавить {{ product_ingredient.ingredient.name }} (+{{ product_ingredient.ingredient.base_price }} руб.)</label>
                     </div>
                     {% endif %}
@@ -55,7 +59,9 @@
                         <input type="checkbox" class="form-check-input ingredient-checkbox"
                                data-product-id="{{ item.product.id }}" 
                                data-price="{{ product_ingredient.remove_price }}" 
-                               data-action="remove">
+                               data-action="remove"
+                               name="customization_{{ item.product.id }}_{{ product_ingredient.ingredient.id }}"
+                               value="remove">
                         <label class="form-check-label">Убрать {{ product_ingredient.ingredient.name }} (+{{ product_ingredient.remove_price }} руб.)</label>
                     </div>
                     {% endif %}
@@ -74,10 +80,10 @@
         let totalPriceElement = document.getElementById("total-price");
         let checkboxes = document.querySelectorAll(".ingredient-checkbox");
         
-        let baseTotalPrice = parseFloat(totalPriceElement.textContent); // Начальная сумма заказа
-        let currentTotalPrice = baseTotalPrice; // Текущая сумма
+        let baseTotalPrice = parseFloat(totalPriceElement.textContent);
+        let currentTotalPrice = baseTotalPrice;
 
-        let productPrices = {}; // Храним начальные цены для продуктов
+        let productPrices = {}; 
 
         checkboxes.forEach(function(checkbox) {
             let productId = checkbox.dataset.productId;
@@ -92,18 +98,16 @@
                 let currentProductPrice = productPrices[productId];
 
                 if (this.checked) {
-                    currentProductPrice += priceChange; // Увеличиваем цену
+                    currentProductPrice += priceChange;
                     currentTotalPrice += priceChange;
                 } else {
-                    currentProductPrice -= priceChange; // Возвращаем цену
+                    currentProductPrice -= priceChange;
                     currentTotalPrice -= priceChange;
                 }
 
-                // Обновляем цену для конкретного продукта
                 priceElement.textContent = currentProductPrice.toFixed(2);
-                productPrices[productId] = currentProductPrice; // Обновляем в памяти
+                productPrices[productId] = currentProductPrice;
 
-                // Обновляем общую цену
                 totalPriceElement.textContent = currentTotalPrice.toFixed(2);
             });
         });

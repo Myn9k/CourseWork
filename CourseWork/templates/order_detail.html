@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали заказа{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="my-4">Заказ от {{ order.created_at|date:"d.m.Y H:i" }}</h2>
+
+    <p><strong>Сумма:</strong> {{ order.total_price }} руб.</p>
+    <p><strong>Статус:</strong> {{ order.get_status_display }}</p>
+
+    <h3>Товары:</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                <th>Кастомизация</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_total_price }} руб.</td>
+                <td>
+                    {% if item.customizations.all %}
+                        <ul>
+                            {% for custom in item.customizations.all %}
+                                <li>
+                                    {% if custom.action == "add" %}
+                                        <span class="text-success">Добавлено:</span>
+                                    {% else %}
+                                        <span class="text-danger">Удалено:</span>
+                                    {% endif %}
+                                    {{ custom.ingredient.name }} (+{{ custom.price }} руб.)
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        Без изменений
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'orders' %}" class="btn btn-secondary">Назад к заказам</a>
+</div>
+{% endblock %}
