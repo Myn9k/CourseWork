@@ -8,11 +8,11 @@
 
     <!-- Фильтр по категориям -->
     <div class="mb-3 text-center">
-        <a href="{% url 'home' %}" class="btn btn-outline-primary {% if not selected_category %}active{% endif %}">
+        <a href="{% url 'home' %}" class="btn btn-outline-warning {% if not selected_category %}active{% endif %}">
             Все категории
         </a>
         {% for category in categories %}
-        <a href="{% url 'home' %}?category={{ category.slug }}" class="btn btn-outline-primary {% if selected_category == category.slug %}active{% endif %}">
+        <a href="{% url 'home' %}?category={{ category.slug }}" class="btn btn-outline-warning {% if selected_category == category.slug %}active{% endif %}">
             {{ category.name }}
         </a>
         {% endfor %}
@@ -38,7 +38,7 @@
                                     <form method="POST" action="{% url 'cart_add' product.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary w-100">Добавить в корзину</button>
+                                        <button type="submit" class="btn btn-warning w-100">Добавить в корзину</button>
                                     </form>
                                 </div>
                             </div>
@@ -68,7 +68,7 @@
                                     <form method="POST" action="{% url 'cart_add' product.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary w-100">Добавить в корзину</button>
+                                        <button type="submit" class="btn btn-warning w-100">Добавить в корзину</button>
                                     </form>
                                 </div>
                             </div>

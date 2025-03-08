@@ -1,9 +1,16 @@
 import django.contrib.auth
+
+from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.apps import apps  # Импортируем модуль для работы с приложениями и моделями в проекте Django
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.hashers import make_password
+from main.models import *
+
+
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from .forms import get_custom_model_form
@@ -193,3 +200,48 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+
+def register_view(request):
+    """Страница регистрации"""
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    error = None
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        full_name = request.POST.get("full_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        email = request.POST.get("email", "").strip()
+        password1 = request.POST.get("password1", "").strip()
+        password2 = request.POST.get("password2", "").strip()
+
+        # Проверяем ошибки
+        if not all([username, full_name, phone, email, password1, password2]):
+            error = "Все поля обязательны!"
+        elif password1 != password2:
+            error = "Пароли не совпадают!"
+        elif User.objects.filter(username=username).exists():
+            error = "Логин уже используется!"
+        elif User.objects.filter(email=email).exists():
+            error = "Email уже зарегистрирован!"
+        else:
+            # Разбиваем `full_name` на части (без ошибок)
+            name_parts = full_name.split()
+            last_name = name_parts[0] if len(name_parts) > 0 else ""
+            first_name = name_parts[1] if len(name_parts) > 1 else ""
+
+            # Создаём пользователя в модели
+            user = User.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                full_name=full_name,
+                phone=phone,
+                email=email,
+                password=password1,
+            )
+            login(request, user)  # Авторизуем после регистрации
+            return redirect("home")
+
+    return render(request, "admin_panel/register.html", {"error": error})

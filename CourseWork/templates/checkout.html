@@ -7,28 +7,106 @@
 
     <form method="POST" action="{% url 'checkout' %}">
         {% csrf_token %}
-        <div class="mb-3">
-            <label>ФИО:</label>
-            <input type="text" name="full_name" required class="form-control">
-        </div>
-        <div class="mb-3">
-            <label>Телефон:</label>
-            <input type="text" name="phone" required class="form-control">
-        </div>
+    
+        <!-- Если пользователь не авторизован, просим его данные -->
+        {% if not user.is_authenticated %}
+            <div class="mb-3">
+                <label>Имя:</label>
+                <input type="text" name="full_name" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label>Телефон:</label>
+                <input type="text" name="phone" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label>Email:</label>
+                <input type="email" name="email" required class="form-control">
+            </div>
+        {% endif %}
+    
         <div class="mb-3">
             <label>Адрес доставки:</label>
             <input type="text" name="address" required class="form-control">
         </div>
-        
-        <h3>Ваш заказ</h3>
-        <ul>
-            {% for item in cart_items %}
-            <li>{{ item.product.name }} - {{ item.quantity }} шт. ({{ item.total_price }} руб.)</li>
-            {% endfor %}
-        </ul>
-        <h4>Итого: {{ total_price }} руб.</h4>
 
-        <button type="submit" class="btn btn-success">Подтвердить заказ</button>
+        <h3>Ваш заказ</h3>
+        {% for item in cart_items %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.product.name }}</h5>
+                <p>Количество: {{ item.quantity }}</p>
+                <p><strong>Начальная цена:</strong> {{ item.total_price }} руб.</p>
+                <p><strong>Цена с кастомизацией:</strong> <span id="price-{{ item.product.id }}">{{ item.total_price }}</span> руб.</p>
+
+                <h6>Выберите кастомизацию:</h6>
+                {% for product_ingredient in item.product.ingredients.all %}
+                    {% if product_ingredient.is_optional %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input ingredient-checkbox"
+                               data-product-id="{{ item.product.id }}" 
+                               data-price="{{ product_ingredient.ingredient.base_price }}" 
+                               data-action="add">
+                        <label class="form-check-label">Добавить {{ product_ingredient.ingredient.name }} (+{{ product_ingredient.ingredient.base_price }} руб.)</label>
+                    </div>
+                    {% endif %}
+
+                    {% if product_ingredient.is_removable %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input ingredient-checkbox"
+                               data-product-id="{{ item.product.id }}" 
+                               data-price="{{ product_ingredient.remove_price }}" 
+                               data-action="remove">
+                        <label class="form-check-label">Убрать {{ product_ingredient.ingredient.name }} (+{{ product_ingredient.remove_price }} руб.)</label>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <h4>Итого: <span id="total-price">{{ total_price }}</span> руб.</h4>
+        <button type="submit" class="btn btn-success">Оплатить</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let totalPriceElement = document.getElementById("total-price");
+        let checkboxes = document.querySelectorAll(".ingredient-checkbox");
+        
+        let baseTotalPrice = parseFloat(totalPriceElement.textContent); // Начальная сумма заказа
+        let currentTotalPrice = baseTotalPrice; // Текущая сумма
+
+        let productPrices = {}; // Храним начальные цены для продуктов
+
+        checkboxes.forEach(function(checkbox) {
+            let productId = checkbox.dataset.productId;
+            let priceElement = document.getElementById(`price-${productId}`);
+
+            if (!productPrices[productId]) {
+                productPrices[productId] = parseFloat(priceElement.textContent);
+            }
+
+            checkbox.addEventListener("change", function() {
+                let priceChange = parseFloat(this.dataset.price);
+                let currentProductPrice = productPrices[productId];
+
+                if (this.checked) {
+                    currentProductPrice += priceChange; // Увеличиваем цену
+                    currentTotalPrice += priceChange;
+                } else {
+                    currentProductPrice -= priceChange; // Возвращаем цену
+                    currentTotalPrice -= priceChange;
+                }
+
+                // Обновляем цену для конкретного продукта
+                priceElement.textContent = currentProductPrice.toFixed(2);
+                productPrices[productId] = currentProductPrice; // Обновляем в памяти
+
+                // Обновляем общую цену
+                totalPriceElement.textContent = currentTotalPrice.toFixed(2);
+            });
+        });
+    });
+</script>
 {% endblock %}

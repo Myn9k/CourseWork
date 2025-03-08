@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth.hashers import make_password
 
 
 class User(AbstractUser):
@@ -27,6 +28,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.full_name
+
+    def save(self, *args, **kwargs):
+        # Проверяем, был ли пароль изменен
+        if self.pk:  # Если объект уже существует
+            original_password = User.objects.get(pk=self.pk).password
+            if original_password != self.password:
+                self.password = make_password(self.password)
+        else:
+            self.password = make_password(self.password)  # Зашифровываем пароль при создании
+
+        super().save(*args, **kwargs)
 
 
 class UserAddress(models.Model):
@@ -111,8 +123,9 @@ class ProductIngredient(models.Model):
     """Связь товара с ингредиентами"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="ingredients")
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    is_optional = models.BooleanField(default=True)
-    remove_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    is_optional = models.BooleanField(default=True)  # Можно ли добавить?
+    is_removable = models.BooleanField(default=True)  # Можно ли убрать?
+    remove_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)  # Стоимость удаления
 
     class Meta:
         verbose_name = "Ингредиент продукта"
@@ -120,25 +133,28 @@ class ProductIngredient(models.Model):
         ordering = ['product']
 
     def __str__(self):
-        return f"{self.product.name} содержит {self.ingredient.name}"
+        return f"{self.product.name} содержит {self.ingredient.name} (Убрать: {self.is_removable})"
 
 
 class Order(models.Model):
     """Заказ пользователя"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
+    guest_id = models.CharField(max_length=36, blank=True, null=True)
     address = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True, related_name="orders")
+    full_name = models.CharField(max_length=255, blank=True, null=True)  # Имя для анонимного пользователя
+    phone = models.CharField(max_length=20, blank=True, null=True)  # Телефон анонимного пользователя
+    email = models.EmailField(blank=True, null=True)  # Email анонимного пользователя
     created_at = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(
         max_length=20,
         choices=[
             ('pending', 'В обработке'),
-            ('in_delivery', 'Доставляется'),
-            ('delivered', 'Доставлено'),
-            ('cancelled', 'Отменено'),
+            ('paid', 'Оплачен'),
+            ('cancelled', 'Отменён'),
         ],
         default='pending'
     )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         verbose_name = "Заказ"
@@ -151,7 +167,7 @@ class Order(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Заказ {self.id} - {self.user.full_name} ({self.get_status_display()})"
+        return f"Заказ {self.id} ({self.get_status_display()})"
 
 
 class OrderItem(models.Model):
@@ -165,9 +181,10 @@ class OrderItem(models.Model):
         verbose_name_plural = "Товары в заказах"
 
     def get_total_price(self):
-        base_price = self.product.price
-        customization_price = sum(custom.price for custom in self.customizations.all())
-        return (base_price + customization_price) * self.quantity
+        """Считаем сумму с учётом кастомизаций"""
+        base_price = self.product.price * self.quantity
+        customization_price = sum(custom.price for custom in self.customizations.all())  # Учитываем кастомизацию
+        return base_price + customization_price
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
@@ -197,3 +214,34 @@ class Delivery(models.Model):
 
     def __str__(self):
         return f"Доставка заказа {self.order.id} ({self.get_status_display()})"
+
+
+class OrderItemCustomization(models.Model):
+    """Кастомизация товаров в заказе (добавление или удаление ингредиентов)"""
+    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, related_name="customizations")
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    action = models.CharField(
+        max_length=10,
+        choices=[('add', 'Добавить'), ('remove', 'Убрать')]
+    )
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        """Автоматически рассчитываем цену кастомизации"""
+        if self.action == 'add':
+            self.price = self.ingredient.base_price  # Цена добавления
+        elif self.action == 'remove':
+            product_ingredient = ProductIngredient.objects.filter(
+                product=self.order_item.product, ingredient=self.ingredient
+            ).first()
+            self.price = product_ingredient.remove_price if product_ingredient else 0  # Цена удаления
+
+        super().save(*args, **kwargs)
+
+        # Пересчитываем стоимость заказа после изменений
+        self.order_item.order.calculate_total_price()
+
+    def __str__(self):
+        action_text = "Добавлено" if self.action == "add" else "Убрано"
+        return f"{action_text} {self.ingredient.name} в {self.order_item.product.name} (+{self.price} руб.)"
+

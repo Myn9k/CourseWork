@@ -1,8 +1,10 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.apps import apps
-from main.models import *
 
+from main.models import *
 from .models import *
+
 from django.forms import modelform_factory
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -45,5 +47,4 @@ def get_custom_model_form(model):
                     field.widget.attrs.update({'class': 'form-control'})
 
     return CustomModelForm
-
 
