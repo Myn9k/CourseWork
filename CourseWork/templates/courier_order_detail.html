@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали заказа №{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="my-4">Детали заказа</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Информация о заказе</h4>
+            <p><strong>Дата заказа:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+            <p><strong>Статус:</strong> <span class="badge bg-info">{{ order.get_status_display }}</span></p>
+            
+            {% if order.user %}
+                <p><strong>Клиент:</strong> {{ order.user.full_name }} ({{ order.user.phone }})</p>
+            {% else %}
+                <p><strong>Клиент (гость):</strong> {{ order.full_name }} ({{ order.phone }})</p>
+            {% endif %}
+
+            <p>
+                <strong>Адрес доставки:</strong> 
+                {% if order.address %}
+                    {{ order.address.address }}  <!-- Адрес авторизованного пользователя -->
+                {% else %}
+                    {{ order.guest_address }}  <!-- Адрес гостя -->
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <h4 class="mt-4">Товары в заказе</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                <th>Кастомизация</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_total_price }} руб.</td>
+                <td>
+                    {% for customization in item.customizations.all %}
+                        <p>
+                            {% if customization.action == "add" %}
+                                <span class="text-success">+ {{ customization.ingredient.name }} ({{ customization.price }} руб.)</span>
+                            {% else %}
+                                <span class="text-danger">- {{ customization.ingredient.name }} ({{ customization.price }} руб.)</span>
+                            {% endif %}
+                        </p>
+                    {% empty %}
+                        <span class="text-muted">Нет изменений</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h4 class="mt-4">Итого: {{ order.total_price }} руб.</h4>
+
+    {% if order.status != "delivered" %}
+        <a href="{% url 'mark_order_delivered' order.id %}" class="btn btn-success mt-3">Доставлено</a>
+    {% endif %}
+
+    <a href="{% url 'courier_orders' %}" class="btn btn-secondary mt-3">Назад</a>
+</div>
+{% endblock %}

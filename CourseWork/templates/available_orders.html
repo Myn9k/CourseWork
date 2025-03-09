@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Свободные заказы{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="my-4">🚚 Свободные заказы</h2>
+
+    {% if orders %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>№ Заказа</th>
+                    <th>Адрес</th>
+                    <th>Сумма</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>
+                        {% if order.address %}
+                            {{ order.address.address }}  <!-- Адрес авторизованного пользователя -->
+                        {% else %}
+                            {{ order.guest_address }}  <!-- Адрес гостя -->
+                        {% endif %}
+                    </td>
+                    <td>{{ order.total_price }} руб.</td>
+                    <td>
+                        <button class="btn btn-primary take-order" data-order-id="{{ order.id }}">
+                            Взять в работу
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет свободных заказов.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll(".take-order").forEach(button => {
+        button.addEventListener("click", function () {
+            let orderId = this.dataset.orderId;
+            let button = this;
+
+            fetch(`/courier/orders/take/${orderId}/`, {
+                method: "POST",
+                headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    button.closest("tr").remove();
+                } else {
+                    alert("Ошибка! Возможно, заказ уже взят. Обновите страницу");
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

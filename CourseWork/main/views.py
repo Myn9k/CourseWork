@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import *
 from .cart import Cart  # Создадим класс Cart для обработки корзины
@@ -48,65 +49,86 @@ def cart(request):
 
 
 def checkout(request):
-    cart = Cart(request)
-    guest_id = get_guest_id(request)
+    cart = Cart(request)  # Получаем корзину
+    guest_id = get_guest_id(request)  # Получаем `guest_id` из cookies
 
     if request.method == 'POST':
-        if request.user.is_authenticated:
-            order = Order.objects.create(user=request.user, total_price=cart.get_total_price())
-        else:
-            full_name = request.POST.get("full_name")
-            phone = request.POST.get("phone")
-            email = request.POST.get("email")
+        # Проверяем, есть ли адрес в POST-запросе, иначе оставляем пустую строку
+        address_text = request.POST.get("address", "").strip()
 
-            if not full_name or not phone or not email:
+        if request.user.is_authenticated:
+            # Проверяем, есть ли этот адрес у пользователя
+            address, created = UserAddress.objects.get_or_create(
+                user=request.user, address=address_text
+            )
+
+            # Создаём заказ с привязкой к адресу
+            order = Order.objects.create(
+                user=request.user,
+                total_price=cart.get_total_price(),
+                address=address  # Сохраняем `UserAddress`
+            )
+        else:
+            # Данные гостя
+            full_name = request.POST.get("full_name", "").strip()
+            phone = request.POST.get("phone", "").strip()
+            email = request.POST.get("email", "").strip()
+
+            if not all([full_name, phone, email, address_text]):
                 return render(request, 'checkout.html', {
                     'cart_items': cart.get_items(),
                     'total_price': cart.get_total_price(),
-                    'error': 'Для оформления заказа заполните все поля.'
+                    'error': 'Все поля обязательны!',
                 })
 
+            # Создаём заказ для гостя (сохранение адреса в `guest_address`)
             order = Order.objects.create(
                 full_name=full_name,
                 phone=phone,
                 email=email,
                 guest_id=guest_id,
-                total_price=cart.get_total_price()
+                total_price=cart.get_total_price(),
+                guest_address=address_text  # Теперь адрес хранится правильно!
             )
 
+        # Сохраняем товары и кастомизацию
         for item in cart.get_items():
             order_item = OrderItem.objects.create(order=order, product=item['product'], quantity=item['quantity'])
 
-            # Обрабатываем кастомизацию
             for key, value in request.POST.items():
                 if key.startswith(f"customization_{item['product'].id}_"):
                     ingredient_id = key.split("_")[-1]
-                    ingredient = get_object_or_404(Ingredient, id=ingredient_id)
+                    action = value  # "add" или "remove"
+                    ingredient = Ingredient.objects.get(id=ingredient_id)
 
-                    price = ingredient.base_price if value == "add" else ProductIngredient.objects.get(
+                    # Получаем `ProductIngredient`, чтобы взять `remove_price`
+                    product_ingredient = ProductIngredient.objects.filter(
                         product=item['product'], ingredient=ingredient
-                    ).remove_price
+                    ).first()
+
+                    # Если действие "remove", берём `remove_price` из `ProductIngredient`
+                    remove_price = product_ingredient.remove_price if product_ingredient else 0
 
                     OrderItemCustomization.objects.create(
                         order_item=order_item,
                         ingredient=ingredient,
-                        action=value,
-                        price=price
+                        action=action,
+                        price=ingredient.base_price if action == "add" else remove_price
                     )
 
-        cart.clear()
+        cart.clear()  # Очищаем корзину после оформления заказа
+
         response = redirect('orders')
-
         if not request.user.is_authenticated:
-            response.set_cookie('guest_id', guest_id, max_age=60*60*24*30)
-
+            response.set_cookie('guest_id', guest_id, max_age=60 * 60 * 24 * 30)  # Запоминаем `guest_id` на 30 дней
         return response
 
     context = {
         'cart_items': cart.get_items(),
         'total_price': cart.get_total_price(),
     }
-    return render(request, 'checkout.html', context)
+
+    return render(request, 'checkout.html', context=context)
 
 
 
@@ -217,4 +239,76 @@ def profile_view(request):
     # Получаем основной адрес пользователя, если он есть
     address = UserAddress.objects.filter(user=user, is_default=True).first()
 
-    return render(request, "profile.html", {"user": user, "address": address, "error": error})
+    context = {
+        "user": user,
+        "address": address,
+        "error": error
+    }
+
+    return render(request, "profile.html", context=context)
+
+
+@login_required
+def courier_orders(request):
+    """Список заказов для курьера"""
+    if not request.user.is_courier:
+        return redirect("home")  # Не курьер? На главную!
+
+    orders = Order.objects.filter(courier=request.user).order_by("-created_at")
+
+    context = {
+        "orders": orders
+    }
+
+    return render(request, "courier_orders.html", context=context)
+
+
+@login_required
+def courier_order_detail(request, order_id):
+    """Детали заказа для курьера"""
+    if not request.user.is_courier:
+        return redirect("home")
+
+    order = get_object_or_404(Order, id=order_id, courier=request.user)
+
+    context = {
+        "order": order
+    }
+
+    return render(request, "courier_order_detail.html", context=context)
+
+
+@login_required
+def mark_order_delivered(request, order_id):
+    """Курьер отмечает заказ как доставленный"""
+    if not request.user.is_courier:
+        return redirect("home")
+
+    order = get_object_or_404(Order, id=order_id, courier=request.user)
+    order.status = "delivered"
+    order.save()
+    return redirect("courier_orders")
+
+
+@login_required
+def available_orders(request):
+    """Выводит все свободные заказы (без назначенного курьера)."""
+    if not request.user.is_courier:
+        return redirect("home")  # Если не курьер, редиректим
+
+    orders = Order.available_orders()
+    return render(request, "available_orders.html", {"orders": orders})
+
+
+@login_required
+def take_order(request, order_id):
+    """Курьер берет заказ в работу."""
+    if not request.user.is_courier:
+        return redirect("home")
+
+    order = get_object_or_404(Order, id=order_id, courier__isnull=True)
+
+    order.courier = request.user  # Назначаем курьера
+    order.save()
+
+    return JsonResponse({"success": True, "message": "Вы взяли заказ!"})

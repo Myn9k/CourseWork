@@ -9,6 +9,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
+    is_courier = models.BooleanField(default=False)
 
     groups = models.ManyToManyField(
         "auth.Group",
@@ -141,9 +142,14 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     guest_id = models.CharField(max_length=36, blank=True, null=True)
     address = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True, related_name="orders")
+    courier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="deliveries",
+                                limit_choices_to={"is_courier": True})
+
     full_name = models.CharField(max_length=255, blank=True, null=True)  # Имя для анонимного пользователя
     phone = models.CharField(max_length=20, blank=True, null=True)  # Телефон анонимного пользователя
     email = models.EmailField(blank=True, null=True)  # Email анонимного пользователя
+    guest_address = models.CharField(max_length=255, blank=True, null=True)  # адресс анонимного пользователя
+
     created_at = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(
@@ -168,6 +174,11 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Заказ {self.id} ({self.get_status_display()})"
+
+    @staticmethod
+    def available_orders():
+        """Возвращает все свободные заказы (без курьера)"""
+        return Order.objects.filter(courier__isnull=True, status="pending")
 
 
 class OrderItem(models.Model):

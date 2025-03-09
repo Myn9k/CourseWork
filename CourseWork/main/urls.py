@@ -30,6 +30,11 @@ urlpatterns = [
     path('checkout/', checkout, name='checkout'),
     path("orders/", orders_list, name="orders"),
     path("orders/<int:order_id>/", order_detail, name="order_detail"),
+    path("courier/orders/", courier_orders, name="courier_orders"),
+    path("courier/orders/<int:order_id>/", courier_order_detail, name="courier_order_detail"),
+    path("courier/orders/<int:order_id>/delivered/", mark_order_delivered, name="mark_order_delivered"),
+    path("courier/orders/available/", available_orders, name="available_orders"),
+    path("courier/orders/take/<int:order_id>/", take_order, name="take_order"),
 ]
 
 if settings.DEBUG:
