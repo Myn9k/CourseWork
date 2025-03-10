@@ -1,0 +1,69 @@
+/* Основной стиль для select */
+.form-select {
+    padding: 10px 15px;
+    font-size: 16px;
+    color: #495057;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff; /* Белый фон по умолчанию */
+}
+
+/* Стили для наведения */
+.form-select option:hover {
+    background-color: #343f40; /* Темно-серый фон при наведении */
+    color: #ffffff; /* Белый текст при наведении */
+}
+
+/* Стили для выбранного элемента */
+.form-select option:checked {
+    background-color: #343a40; /* Темно-серый фон для выбранного */
+    color: #ffffff; /* Белый текст для выбранного */
+}
+
+/* Стили для select при фокусе */
+.form-select:focus {
+    border-color: #343a40;
+    box-shadow: 0 0 5px rgba(52, 58, 64, 0.8); /* Тень при фокусе */
+}
+
+
+.form-circle{
+    border-radius: 20px; /* Скругленные края */
+}
+
+
+/* Общий стиль для input */
+.form-control {
+    padding: 10px 15px; /* Внутренние отступы */
+    font-size: 16px; /* Размер шрифта */
+    color: #495057; /* Цвет текста */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Легкая тень */
+    background-color: #ffffff; /* Белый фон */
+    border: 1px solid #ced4da; /* Граница */
+    transition: all 0.2s ease-in-out; /* Анимация при наведении/фокусе */
+}
+
+/* Фокус на input */
+.form-control:focus {
+    border-color: #343a40; /* Цвет рамки при фокусе */
+    box-shadow: 0 0 5px rgba(52, 58, 64, 0.8); /* Тень при фокусе */
+    outline: none; /* Убираем стандартный outline */
+}
+
+/* Дополнительные стили для input с иконкой */
+.input-group .form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Наведение и активное состояние */
+.form-control:hover {
+    background-color: #f8f9fa; /* Светлый фон при наведении */
+}
+
+/* Общий стиль для input и select */
+.input-group-text {
+    background-color: #343a40; /* Темно-серый фон для иконок */
+    color: #ffffff; /* Белый цвет текста */
+    border: 1px solid #ced4da; /* Граница */
+}
+

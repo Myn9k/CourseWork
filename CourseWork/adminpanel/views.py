@@ -18,6 +18,17 @@ from tablib import Dataset
 from .decorators import admin_required
 
 
+def get_models_list():
+    """Функция для получения списка моделей"""
+    return [
+        {
+            'name': model._meta.object_name,
+            'verbose_name_plural': model._meta.verbose_name_plural
+        }
+        for model in apps.get_models()
+    ]
+
+
 @admin_required
 @login_required
 def export_data(request, model_name):
@@ -76,15 +87,8 @@ def admin_dashboard(request):
     """
     Функция отображает список всех моделей, зарегистрированных в проекте.
     """
-    models = apps.get_models()  # Получаем все модели из проекта
     context = {
-        'models': [
-            {
-                'name': model._meta.object_name,  # Имя модели
-                'verbose_name_plural': model._meta.verbose_name_plural  # Множественное имя модели для отображения
-            }
-            for model in models  # Перебираем все модели и добавляем их в контекст
-        ]
+        'models': get_models_list()  # Передаем список моделей в шаблон
     }
     # Отправляем данные в шаблон по путю 'admin_panel/dashboard.html'
     return render(request, 'admin_panel/dashboard.html', context)
@@ -125,6 +129,7 @@ def model_list_view(request, model_name):
         'objects': objects,
         'model_name': model_name,
         'filter_options': filter_options,
+        'models': get_models_list()  # Передаем список моделей в шаблон
     }
 
     return render(request, 'admin_panel/model_list.html', context)
@@ -153,7 +158,8 @@ def model_edit_view(request, model_name, object_id=None):
 
     context = {
         'form': form,
-        'model_name': model_name
+        'model_name': model_name,
+        'models': get_models_list()  # Передаем список моделей в шаблон
     }
 
     return render(request, 'admin_panel/model_edit.html', context)
